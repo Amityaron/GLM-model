@@ -1,0 +1,645 @@
+---
+title: "GLM Birth Weights"
+author: "Amit yaron"
+date: "10/29/2020"
+output:
+  pdf_document: default
+  html_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+'
+install.packages("ggcorrplot")
+install.packages("ggplot2")
+install.packages("cowplot")
+install.packages("gridExtra")
+install.packages("grid")
+nstall.packages("ggpubr")
+install.packages("lmtest")
+
+'
+
+```
+
+
+#Preliminary Analysis of birth weights:
+
+Upload the data 
+```{r}
+data <- read.table(file="birthwt.data.139.txt", header=TRUE )
+
+
+low<-as.numeric(data[,1])
+age<-as.numeric(data[,2])
+lwt<-as.double(data[,3])
+race<-as.character(data[,4])
+smoke<-as.numeric(data[,5])
+ht<-as.numeric(data[,6])
+ui<-as.numeric(data[,7])
+ftv<-as.numeric(data[,8])
+ptl<-as.numeric(data[,9])
+bwt<-as.numeric(data[,10])
+
+
+```
+
+
+change race to indicators : white or Other,Black
+Create Matrix of continuous variables: her name Udata 
+```{r}
+white<- as.numeric(race == "white")
+Udata<-cbind(low,age,lwt,white,smoke,ht,ui,ftv,ptl,bwt)
+```
+
+
+
+Histograms of continuous variables 
+```{r}
+par(mfrow=c(1,3))
+hist(age,main = "Histogram of age", xlab="mother's age",border = "blue",col="green", xlim = c(10,45),breaks = 10,prob=TRUE)
+lines(density(age))
+hist(bwt,main = "Histogram of birth weight", xlab="birth weight",border = "blue",cex=1,col="red", xlim = c(500,5000),breaks = 10,prob=TRUE)
+lines(density(bwt))
+hist(lwt,main = "Histogram of mother's weight", xlab="mother's weight",border = "red",col="blue", xlim = c(80,250),breaks = 10,prob=TRUE)
+axis(1,at =seq(80,250,by=120),labels = seq(80,250,by=120))
+lines(density(lwt))
+
+
+```
+
+Histograms of continuous variables with -----ggplot2-------
+```{r}
+library(ggplot2)
+library(cowplot)
+par(mfrow=c(1,3))
+age<-unlist(age)
+age<- as.data.frame(age)
+p1<-ggplot(data=age,aes(age)) + 
+ geom_histogram(position="identity",aes(y =..density..),breaks=seq(10, 50, by = 2), 
+                 col="red", 
+                 fill="green", 
+                 alpha = .2)+
+   geom_density(aes(x=age,y=..density..))+
+  labs(title="Histogram for Age", x="Age", y="Count")
+
+
+bwt<-unlist(bwt)
+bwt<- as.data.frame(bwt)
+p2<-ggplot(data=bwt,aes(bwt)) + 
+ geom_histogram(position="identity",aes(y =..density..),breaks=seq(1000, 5000, by = 200), 
+                 col="red", 
+                 fill="blue", 
+                 alpha = .2)+
+   geom_density(aes(x=bwt,y=..density..))+
+  labs(title="Histogram of birth weight ", x="birth weight", y="Count")
+
+
+lwt<-unlist(lwt)
+lwt<- as.data.frame(lwt)
+p3<-ggplot(data=lwt,aes(lwt)) + 
+ geom_histogram(position="identity",aes(y =..density..),breaks=seq(80, 250, by = 10), 
+                 col="red", 
+                 fill="yellow", 
+                 alpha = .2)+
+   geom_density(aes(x=lwt,y=..density..))+
+  labs(title="Histogram of mother weight ", x="mother weight", y="Count")
+
+
+
+plot_grid(p1, p2,p3, labels = "AUTO")
+
+```
+
+
+
+Summery  of the variables with corrlsion matrix 
+```{r}
+library(ggcorrplot)
+summary(Udata, digits = 1)
+print("---------------")
+table(low)
+M<- cbind(lwt,bwt,age)
+corr<-round(cor(M), 2)
+
+ggcorrplot(corr, hc.order = TRUE, outline.col = "white", type = "lower", lab = TRUE)
+
+```
+
+
+Histograms of the indicator variables with table 
+```{r}
+
+par(mfrow=c(2,3))
+
+library(ggplot2)
+ggplot(data.frame(ftv), aes(x=ftv)) +
+  geom_bar(fill="red",color="blue",)
+
+ggplot(data.frame(ht), aes(x=ht)) +
+  geom_bar(fill="blue",color="red")
+
+ggplot(data.frame(low), aes(x=low)) +
+  geom_bar(fill="green",color="red")
+
+ggplot(data.frame(ptl), aes(x=ptl)) +
+  geom_bar(fill="white",color="red")
+
+ggplot(data.frame(smoke), aes(x=smoke)) +
+  geom_bar(fill="black",color="red")
+
+ggplot(data.frame(ui), aes(x=ui)) +
+  geom_bar(fill="pink",color="red")
+
+ggplot(data.frame(white),aes(x=white)) +
+  geom_bar(fill="yellow",color="red")
+
+
+ggplot(data.frame(race),aes(x=race)) +
+  geom_bar(fill="orange",color="blue")
+
+
+table(race)
+print("--------------------------------------")
+table(ftv)
+print("--------------------------------------")
+table(ht)
+print("--------------------------------------")
+table(low)
+print("--------------------------------------")
+table(ui)
+print("--------------------------------------")
+table(ptl)
+print("--------------------------------------")
+table(white)
+print("--------------------------------------")
+table(smoke)
+
+
+
+```
+
+
+
+Joint distribution of continuous variables:
+```{r}
+ library(GGally)
+ggscatmat(cbind(age,bwt,lwt),alpha=0.8) +
+   ggtitle("Joint distribution of continuous variables scatterplot matrix") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 2))
+
+pairs(cbind(age,bwt,lwt))
+   
+```
+
+
+
+Joint distribution of indicator variables:
+```{r}
+table(white,smoke)
+prop.table(table(white,smoke))
+print("----------------------------")
+table(white,low)
+prop.table(table(white,low))
+print("----------------------------")
+table(low,smoke)
+prop.table(table(low,smoke))
+print("----------------------------")
+table(low,ht)
+prop.table(table(low,ht))
+print("----------------------------")
+table(low,ui)
+prop.table(table(low,ui))
+print("----------------------------")
+table(low,ptl)
+prop.table(table(low,ptl))
+```
+
+
+Box-plot about the relation between the continuous variables to the category variables
+```{r}
+
+'
+#low as age,bwt,lwt
+par(mfrow=c(1,3))
+boxplot(age ~low, xlab="low birth weight less than 2.5kg ", ylab="mother's age")
+#boxplot(bwt ~low, xlab="low", ylab="bwt")
+#axis(4, at=seq(0,5000, 500))
+boxplot(lwt ~low, xlab="low", ylab="lwt")
+axis(4, at=seq(0, 200, 10))
+
+
+#age Box_plot! 
+par(mfrow=c(2,3))
+boxplot(age ~smoke, xlab="smoke", ylab="age")
+boxplot(age ~ht, xlab="ht", ylab="age")
+boxplot(age ~ui, xab="ui", ylab="age")
+boxplot(age ~ftv, xab="ftv", ylab="age")
+boxplot(age ~race, xab="race", ylab="age")
+boxplot(age ~ptl, xab="ptl", ylab="age")
+
+#bwt Box_plot! 
+par(mfrow=c(2,3))
+boxplot(bwt ~smoke, xlab="smoke", ylab="bwt")
+boxplot(bwt ~ht, xlab="ht", ylab="bwt")
+boxplot(bwt ~ui, xab="ui", ylab="bwt")
+boxplot(bwt ~ftv, xab="ftv", ylab="bwt")
+boxplot(bwt ~race, xab="race", ylab="bwt")
+boxplot(bwt ~ptl, xab="ptl", ylab="bwt")
+
+#lwt Box_plot! 
+par(mfrow=c(2,3))
+boxplot(lwt ~smoke, xlab="smoke", ylab="lwt")
+boxplot(lwt ~ht, xlab="ht", ylab="lwt")
+boxplot(lwt ~ui, xab="ui", ylab="lwt")
+boxplot(lwt ~ftv, xab="ftv", ylab="lwt")
+boxplot(lwt ~race, xab="race", ylab="lwt")
+boxplot(lwt ~ptl, xab="ptl", ylab="lwt")
+
+'
+
+
+```
+
+
+
+Box-plot about the relation between the continuous variables to the category variables with----ggplot2-----
+```{r}
+library(ggplot2)
+library(ggpubr)
+#-----------------------------------------------------age---------------------------------------------------------------------------------
+#Plot of mother's age as baby birth weight
+#
+
+t1<- as.data.frame(cbind(age,low))
+
+p1 <- ggplot(t1, aes(x=factor(low,labels =c("0","1") ), y=age ,color=factor(low,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="Baby birth weight less than 2.5kg", y = "Mother's age",color="low")
+#
+#Plot of mother's age as Smoking
+#
+
+t2<- as.data.frame(cbind(age,smoke))
+
+p2 <- ggplot(t2, aes(x=factor(smoke,labels =c("0","1") ), y=age ,color=factor(smoke,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="Smoking status during pregnancy", y = "Mother's age",color="smoke")
+#
+#Plot of mother's age as white
+#
+
+t3<- as.data.frame(cbind(age,white))
+
+p3 <- ggplot(t3, aes(x=factor(white,labels =c("0","1") ), y=age ,color=factor(white,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="Race white", y = "Mother's age",color="white")
+
+
+ggarrange(p1,p2,p3+ rremove("x.text"), 
+          ncol = 3, nrow = 1)
+
+#-----------------------------------------------------age----------------------------------------------------------------------------
+#
+#Plot of mother's age as presence of uterine irritability
+#
+
+t4<- as.data.frame(cbind(age,ui))
+
+p4 <- ggplot(t4, aes(x=factor(ui,labels =c("0","1") ), y=age ,color=factor(ui,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="presence of uterine irritability", y = "Mother's age",color="ui")
+
+#
+#Plot of mother's age as number of physician visits during the first trimester
+#
+
+t5<- as.data.frame(cbind(age,ftv))
+
+p5 <- ggplot(t5, aes(x=factor(ftv,labels =c("0","1") ), y=age ,color=factor(ftv,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x=" physician visits during the first trimester", y = "Mother's age",color="ftv")
+
+#
+#Plot of mother's age as number of previous premature labours
+#
+
+t6<- as.data.frame(cbind(age,ptl))
+
+p6 <- ggplot(t6, aes(x=factor(ptl,labels =c("0","1") ), y=age ,color=factor(ptl,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="previous premature labours", y = "Mother's age",color="ptl")
+
+
+ggarrange(p4,p5,p6+ rremove("x.text"), 
+          ncol = 3, nrow = 1)
+
+
+#-----------------------------------------------lwt--------------------------------------------------------------------------------------
+#
+#Plot of mother's weight in pounds at last menstrual as low baby birth weight
+#
+
+t7<- as.data.frame(cbind(lwt,low))
+
+p7 <- ggplot(t7, aes(x=factor(low,labels =c("0","1") ), y=lwt ,fill=factor(low,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="baby birth weight", y = "mother's weight",fill="low")
+
+#
+#Plot of mother's weight in pounds at last menstrual as smoke
+#
+
+t8<- as.data.frame(cbind(lwt,smoke))
+
+p8 <- ggplot(t8, aes(x=factor(smoke,labels =c("0","1") ), y=lwt ,fill=factor(smoke,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="smoking status during pregnancy", y = "mother's weight",fill="smoke")
+
+#
+#Plot of mother's weight in pounds at last menstrual as race
+#
+
+t9<- as.data.frame(cbind(lwt,white))
+
+p9 <- ggplot(t9, aes(x=factor(white,labels =c("0","1") ), y=lwt ,fill=factor(white,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="Race", y = "mother's weight",fill="white")
+
+
+ggarrange(p7,p8,p9+ rremove("x.text"), 
+          ncol = 3, nrow = 1)
+
+#-----------------------------------------------lwt------------------------------------------------------------------------------------------
+
+#
+#Plot of mother's weight in pounds as history of hypertension ui
+#
+
+t10<- as.data.frame(cbind(lwt,ui))
+
+p10 <- ggplot(t10, aes(x=factor(ui,labels =c("0","1") ), y=lwt ,fill=factor(ui,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="history of hypertension", y = "mother's weight",fill="ui")
+
+#
+#Plot of mother's weight in pounds as number of physician visits during the first trimester
+#
+
+
+t11<- as.data.frame(cbind(lwt,ftv))
+
+p11 <- ggplot(t11, aes(x=factor(ftv,labels =c("0","1") ), y=lwt ,fill=factor(ftv,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="physician visits during the first trimester", y = "mother's weight",fill="ftv")
+
+#
+#Plot of mother's weight in pounds as number of previous premature labours
+#
+
+
+t12<- as.data.frame(cbind(lwt,ptl))
+
+p12 <- ggplot(t12, aes(x=factor(ptl,labels =c("0","1") ), y=lwt ,fill=factor(ptl,labels = c("0","1")))) + 
+  geom_boxplot()+
+  labs(x="previous premature labours", y = "mother's weight",fill="ptl")
+
+
+
+
+ggarrange(p10,p11,p12+ rremove("x.text"), 
+          ncol = 3, nrow = 1)
+
+
+
+#-----------------------------------------------bwt------------------------------------------------------------------------------------------
+
+#
+#Plot of birth weight in grams  as indicator of birth weight less than 2.5kg
+#
+
+
+t13<- as.data.frame(cbind(bwt,low))
+
+p13 <- ggplot(t13, aes(x=factor(low,labels =c("0","1") ), y=bwt ,fill=factor(low,labels = c("0","1")))) + 
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(x="birth weight", y = "birth weight in grams",fill="low")
+
+
+#
+#Plot of birth weight in grams  as smoking during pregnancy
+#
+
+
+t14<- as.data.frame(cbind(bwt,smoke))
+
+p14 <- ggplot(t14, aes(x=factor(smoke,labels =c("0","1") ), y=bwt ,fill=factor(smoke,labels = c("0","1")))) + 
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(x="smoking during pregnancy", y = "birth weight in grams",fill="smoke")
+
+#
+#Plot of birth weight in grams  as race white
+#
+
+
+t15<- as.data.frame(cbind(bwt,white))
+
+p15 <- ggplot(t15, aes(x=factor(white,labels =c("0","1") ), y=bwt ,fill=factor(white,labels = c("0","1")))) + 
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(x="Race", y = "birth weight in grams",fill="white")
+
+ggarrange(p13,p14,p15+ rremove("x.text"), 
+          ncol = 3, nrow = 1)
+#-----------------------------------------------bwt------------------------------------------------------------------------------------------
+
+
+#
+#Plot of birth weight in grams  as presence of uterine irritability
+#
+
+t16<- as.data.frame(cbind(bwt,ui))
+
+p16 <- ggplot(t16, aes(x=factor(ui,labels =c("0","1") ), y=bwt ,fill=factor(ui,labels = c("0","1")))) + 
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(x="uterine irritability", y = "birth weight in grams",fill="ui")
+
+#
+#Plot of birth weight in grams  as physician visits during the first trimester
+#
+
+t17<- as.data.frame(cbind(bwt,ftv))
+
+p17 <- ggplot(t17, aes(x=factor(ftv,labels =c("0","1") ), y=bwt ,fill=factor(ftv,labels = c("0","1")))) + 
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(x="physician visits during the first trimester", y = "birth weight in grams",fill="ftv")
+
+#
+#Plot of birth weight in grams  as number of previous premature labours
+#
+
+t18<- as.data.frame(cbind(bwt,ptl))
+
+p18 <- ggplot(t18, aes(x=factor(ptl,labels =c("0","1") ), y=bwt ,fill=factor(ptl,labels = c("0","1")))) + 
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(x="previous premature labours", y = "birth weight in grams",fill="ptl")
+
+ggarrange(p16,p17,p18+ rremove("x.text"), 
+          ncol = 3, nrow = 1)
+
+```
+
+
+
+
+Fit OLS simple linear regression model
+```{r}
+lm_ols <- lm(bwt ~age+lwt+white+smoke+ht+ui+ftv+ptl,data=data)
+summary(lm_ols)
+plot(lm_ols$residuals, pch = 16, col = "red")
+
+```
+
+
+THe Best model logistic  on AIC ---Automatically select variables using two methods - Forward Selection and Backward Selection----
+```{r}
+
+glm_model<-glm(low~age+lwt+white+smoke+ht+ui+ftv+ptl,data=data, family = binomial(link = "logit"))
+
+summary(glm_model)
+
+
+
+best_model<-step(glm_model,direction = "both",trace=1)
+
+summary(best_model)
+
+
+
+
+
+
+```
+
+
+
+THe Best model probit   on AIC  ---Automatically select variables using two methods - Forward Selection and Backward Selection----
+```{r}
+pro_model<-glm(low~age+lwt+white+smoke+ht+ui+ftv+ptl,data=data, family = binomial(link = "probit"))
+ 
+summary(pro_model) 
+
+pro_best_model<-step(pro_model,direction = "both",trace=1)
+
+#significant variables verables are :   low ~ lwt + white + smoke + ht + ptl
+
+summary(pro_best_model) 
+
+
+
+```
+
+
+
+Interaction and transformation on probit model 
+```{r}
+
+testmodel<-glm(low ~ lwt+white+smoke+(white*smoke) +ht+ptl,data=data, family = binomial(link = "probit"))
+AIC(testmodel)
+
+testmode2<-glm(low ~ lwt+white+smoke+ht+(smoke*ht)+ptl,data=data, family = binomial(link = "probit"))
+AIC(testmode2)
+
+testmode3<-glm(low ~ lwt+white+smoke+ht+(white*ht)+ptl,data=data, family = binomial(link = "probit"))
+AIC(testmode3)
+
+testmode4<-glm(low ~ lwt+white+smoke+(white*smoke) +ht+ptl,data=data, family = binomial(link = "probit"))
+AIC(testmode4)
+
+#Use log in the lwt !! lower the AIC
+
+
+tpro_model<-glm(low ~ log(lwt)+white+smoke+ht+ptl,data=data, family = binomial(link = "probit"))
+ 
+summary(tpro_model) 
+```
+
+
+ Test the model : Likelihood ratio test,BIC,check the overdispersion
+```{r}
+#Likelihood ratio test 
+library(lmtest)
+lrtest( tpro_model,pro_model)
+#BIC 
+BIC( tpro_model)
+BIC(pro_model)
+#check the overdispersion 1.050 almost 1 it good !! 
+dp = sum(residuals(tpro_model,type ="pearson")^2)/tpro_model$df.residual
+dp
+```
+
+
+
+
+Outliers and added-variable plot in r
+```{r}
+library(car)
+#devlance response : response and pearson 
+par(mfrow=c(1,2))
+predicted_values = tpro_model$fitted	# estimated mu
+
+response.resid1 = residuals(tpro_model, type="response")#
+pearson.resid2= residuals(tpro_model, type="pearson")
+summary(response.resid1)
+summary(pearson.resid2)
+
+
+plot(predicted_values,response.resid1)
+identify(predicted_values,response.resid1)
+plot(predicted_values,pearson.resid2)
+identify(predicted_values,pearson.resid2)
+
+par(mfrow=c(1,2))
+
+deviance.resid3= residuals(tpro_model, type="deviance")
+plot(predicted_values,deviance.resid3)
+identify(predicted_values,deviance.resid3)
+summary(deviance.resid3)
+
+#cook distance
+h.ii = hatvalues(tpro_model)
+D.ii = cooks.distance(tpro_model)
+plot(h.ii, D.ii)
+
+summary(D.ii)
+identify(h.ii, D.ii)
+
+crPlots(tpro_model, one.page=TRUE)
+avPlots(tpro_model, one.page=TRUE)
+
+```
+
+
+
+The Best model without Outliers 
+
+```{r}
+no_outliers=1:142
+no_outliers=( no_outliers!=110 &  no_outliers!=117 & no_outliers!=128)
+finel_tpro_model<-glm(low ~ log(lwt)+white+smoke+ht+ptl,data=data[no_outliers,], family = binomial(link = "probit"))
+summary(finel_tpro_model)
+dp2 = sum(residuals(finel_tpro_model,type ="pearson")^2)/tpro_model$df.residual
+dp2
+
+```
+
+
+
+
