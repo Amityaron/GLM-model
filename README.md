@@ -1,1 +1,1 @@
-# GLM-model
+#Generalized linear model
