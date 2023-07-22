@@ -15,7 +15,7 @@ In pursuit of our objectives, we employed the following methodologies: <br />
 
 3.[Leverage analysis](https://en.wikipedia.org/wiki/Leverage_(statistics)): <br />
    
-$$ h_{ii}=(H)_{ii}=x_{i}^T(X^{T}X)^{-1}x_i $$ the $i$ diagonal element of the ortho-projection matrix $H=X(X^TX)^{-1}X^T$
+$h_{ii}=(H)_{ii}=x_i^{T}(X^TX)^{-1}x_i$ the $i$ diagonal element of the ortho-projection matrix $H=X(X^TX)^{-1}X^T$
 
 4. Cook's distance examination: <br />
 
