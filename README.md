@@ -12,7 +12,11 @@ In pursuit of our objectives, we employed the following methodologies: <br />
 1. Matrix correlation: <br />
 2. Automatic Variable Selection Algorithms based on the Akaike Information Criterion (AIC) <br />
 <img src="https://github.com/Amityaron/Generalized-linear-model/blob/main/forward-stepwise-algorithm.png" width="40%" height="20%">
-3. Leverage analysis: <br />
+
+3.[Leverage analysis](https://en.wikipedia.org/wiki/Leverage_(statistics)): <br />
+   
+$$ h_{ii}=(H)_{ii}=x_{i}^T(X^{T}X)^{-1}x_i $$ the $i$ diagonal element of the ortho-projection matrix $H=X(X^TX)^{-1}X^T$
+
 4. Cook's distance examination: <br />
 
 ![image](https://github.com/Amityaron/Generalized-linear-model/assets/70226919/7d8e0d61-8aee-4ae3-9b69-3329f2addc6b)
