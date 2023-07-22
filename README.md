@@ -11,6 +11,7 @@ In pursuit of our objectives, we employed the following methodologies: <br />
 
 1. Matrix correlation <br />
 2. Automatic Variable Selection Algorithms based on the Akaike Information Criterion (AIC) <br />
+<img src="https://github.com/Amityaron/Generalized-linear-model/blob/main/forward-stepwise-algorithm.png" width="40%" height="20%">
 3. Leverage analysis <br />
 4. Cook's distance examination <br />
 5. Exploration of interactions among explanatory variables. <br />
