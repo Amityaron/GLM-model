@@ -9,12 +9,18 @@ Throughout the project, the Probit regression link from the following source was
 
 In pursuit of our objectives, we employed the following methodologies: <br />
 
-1. Matrix correlation <br />
+1. Matrix correlation: <br />
 2. Automatic Variable Selection Algorithms based on the Akaike Information Criterion (AIC) <br />
 <img src="https://github.com/Amityaron/Generalized-linear-model/blob/main/forward-stepwise-algorithm.png" width="40%" height="20%">
-3. Leverage analysis <br />
-4. Cook's distance examination <br />
-5. Exploration of interactions among explanatory variables. <br />
+3. Leverage analysis: <br />
+4. Cook's distance examination: <br />
 
-By implementing these methodologies, we aimed to establish a robust GLM model that sheds light on the relationship between infant mortality and low birth-weight babies. <br />
+![image](https://github.com/Amityaron/Generalized-linear-model/assets/70226919/7d8e0d61-8aee-4ae3-9b69-3329f2addc6b)
+
+where $p$ is the rank of the model and $\hat{y}_{j(i)}$  is the fitted response value obtained when excluding $i$,and $s^2=\frac{e^Te}{n-p}$ .
+
+
+6. Exploration of interactions among explanatory variables: <br />
+By implementing these methodologies, we aimed to establish a robust GLM model that sheds light on the relationship <br />
+between infant mortality and low birth-weight babies. <br />
 
